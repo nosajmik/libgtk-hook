@@ -27,6 +27,9 @@ typedef void (*gtk_style_context_add_class_func)(GtkStyleContext *, const gchar 
 typedef void (*gtk_widget_set_size_request_func)(GtkWidget *, gint, gint);
 typedef void (*gtk_main_func)(void);
 typedef void (*gtk_main_quit_func)(void);
+typedef void (*gtk_text_view_insert_func)(GtkTextView *, GtkTextBuffer *, GtkTextIter *, const gchar *, gint);
+typedef void (*gtk_text_buffer_insert_at_cursor_func)(GtkTextBuffer *, const gchar *, gint);
+typedef void (*gtk_text_buffer_insert_func)(GtkTextBuffer *, GtkTextIter *, const gchar *, gint);
 
 void gtk_button_clicked(GtkButton *button)
 {
@@ -90,7 +93,6 @@ GtkWidget *gtk_image_new_from_file(const gchar *filename)
     return original_gtk_image_new_from_file(filename);
 }
 
-
 void gtk_widget_show(GtkWidget *widget)
 {
     static uint64_t counter = 0;
@@ -100,7 +102,6 @@ void gtk_widget_show(GtkWidget *widget)
     
     original_gtk_widget_show(widget);
 }
-
 
 GtkWidget *gtk_button_new_with_label(const gchar *label)
 {
@@ -113,7 +114,6 @@ GtkWidget *gtk_button_new_with_label(const gchar *label)
     return original_gtk_button_new_with_label(label);
 }
 
-
 void gtk_widget_hide(GtkWidget *widget)
 {
     static uint64_t counter = 0;
@@ -123,7 +123,6 @@ void gtk_widget_hide(GtkWidget *widget)
     
     original_gtk_widget_hide(widget);
 }
-
 
 void gtk_widget_set_sensitive(GtkWidget *widget, gboolean sensitive)
 {
@@ -136,7 +135,6 @@ void gtk_widget_set_sensitive(GtkWidget *widget, gboolean sensitive)
     original_gtk_widget_set_sensitive(widget, sensitive);
 }
 
-
 void gtk_container_add(GtkContainer *container, GtkWidget *widget)
 {
     static uint64_t counter = 0;
@@ -146,7 +144,6 @@ void gtk_container_add(GtkContainer *container, GtkWidget *widget)
     
     original_gtk_container_add(container, widget);
 }
-
 
 void gtk_container_remove(GtkContainer *container, GtkWidget *widget)
 {
@@ -159,7 +156,6 @@ void gtk_container_remove(GtkContainer *container, GtkWidget *widget)
     original_gtk_container_remove(container, widget);
 }
 
-
 GtkWidget *gtk_box_new(GtkOrientation orientation, gint spacing)
 {
     static uint64_t counter = 0;
@@ -169,7 +165,6 @@ GtkWidget *gtk_box_new(GtkOrientation orientation, gint spacing)
     
     return original_gtk_box_new(orientation, spacing);
 }
-
 
 GtkWidget *gtk_grid_new(void)
 {
@@ -191,7 +186,6 @@ GtkWidget *gtk_dialog_new(void)
     return original_gtk_dialog_new();
 }
 
-
 gint gtk_dialog_run(GtkDialog *dialog)
 {
     static uint64_t counter = 0;
@@ -201,7 +195,6 @@ gint gtk_dialog_run(GtkDialog *dialog)
     
     return original_gtk_dialog_run(dialog);
 }
-
 
 GtkWidget *gtk_dialog_add_button(GtkDialog *dialog, const gchar *button_text, gint response_id)
 {
@@ -213,7 +206,6 @@ GtkWidget *gtk_dialog_add_button(GtkDialog *dialog, const gchar *button_text, gi
     
     return original_gtk_dialog_add_button(dialog, button_text, response_id);
 }
-
 
 GtkWidget *gtk_message_dialog_new(GtkWindow *parent_window, GtkDialogFlags flags, GtkMessageType type,
                                   GtkButtonsType buttons_type, const gchar *message_format, ...)
@@ -232,7 +224,6 @@ GtkWidget *gtk_message_dialog_new(GtkWindow *parent_window, GtkDialogFlags flags
     return dialog;
 }
 
-
 GtkCssProvider *gtk_css_provider_new(void)
 {
     static uint64_t counter = 0;
@@ -244,18 +235,16 @@ GtkCssProvider *gtk_css_provider_new(void)
     return original_gtk_css_provider_new();
 }
 
-
 void gtk_style_context_add_class(GtkStyleContext *context, const gchar *class_name)
 {
     static uint64_t counter = 0;
-    printf("%s: %lu\n", __func__, counter++);
+    printf("%s: %s: %lu\n", __func__, class_name, counter++);
     
     gtk_style_context_add_class_func original_gtk_style_context_add_class =
         (gtk_style_context_add_class_func)dlsym(RTLD_NEXT, "gtk_style_context_add_class");
     
     original_gtk_style_context_add_class(context, class_name);
 }
-
 
 void gtk_widget_set_size_request(GtkWidget *widget, gint width, gint height)
 {
@@ -268,7 +257,6 @@ void gtk_widget_set_size_request(GtkWidget *widget, gint width, gint height)
     original_gtk_widget_set_size_request(widget, width, height);
 }
 
-
 void gtk_main(void)
 {
     static uint64_t counter = 0;
@@ -279,7 +267,6 @@ void gtk_main(void)
     original_gtk_main();
 }
 
-
 void gtk_main_quit(void)
 {
     static uint64_t counter = 0;
@@ -288,4 +275,38 @@ void gtk_main_quit(void)
     gtk_main_quit_func original_gtk_main_quit = (gtk_main_quit_func)dlsym(RTLD_NEXT, "gtk_main_quit");
     
     original_gtk_main_quit();
+}
+
+void gtk_text_view_insert(GtkTextView *text_view, GtkTextBuffer *buffer, GtkTextIter *iter,
+                          const gchar *text, gint len)
+{
+    static uint64_t counter = 0;
+    printf("%s: %.*s: %lu\n", __func__, len, text, counter++);
+
+    gtk_text_view_insert_func original_gtk_text_view_insert =
+        (gtk_text_view_insert_func)dlsym(RTLD_NEXT, "gtk_text_view_insert");
+
+    original_gtk_text_view_insert(text_view, buffer, iter, text, len);
+}
+
+void gtk_text_buffer_insert_at_cursor(GtkTextBuffer *buffer, const gchar *text, gint len)
+{
+    static uint64_t counter = 0;
+    printf("%s: '%s': %lu\n", __func__, text, counter++);
+
+    gtk_text_buffer_insert_at_cursor_func original_gtk_text_buffer_insert_at_cursor =
+        (gtk_text_buffer_insert_at_cursor_func)dlsym(RTLD_NEXT, "gtk_text_buffer_insert_at_cursor");
+
+    original_gtk_text_buffer_insert_at_cursor(buffer, text, len);
+}
+
+void gtk_text_buffer_insert(GtkTextBuffer *buffer, GtkTextIter *iter, const gchar *text, gint len)
+{
+    static uint64_t counter = 0;
+    printf("%s: '%.*s': %lu\n", __func__, len, text, counter++);
+
+    gtk_text_buffer_insert_func original_gtk_text_buffer_insert =
+        (gtk_text_buffer_insert_func)dlsym(RTLD_NEXT, "gtk_text_buffer_insert");
+
+    original_gtk_text_buffer_insert(buffer, iter, text, len);
 }
